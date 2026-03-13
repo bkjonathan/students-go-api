@@ -13,14 +13,23 @@ import (
 
 	"github.com/bkjonathan/students-go-api/internal/config"
 	"github.com/bkjonathan/students-go-api/internal/http/handlers/student"
+	"github.com/bkjonathan/students-go-api/internal/storage/sqlite"
 )
 
 func main() {
 	cfg := config.LoadConfig()
 
+	storage, err := sqlite.NewSQLiteStorage(cfg)
+
+	if err != nil {
+		log.Fatalf("Error creating SQLite storage: %v", err)
+	}
+
+	slog.Info("Storage initialized successfully", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
+
 	router := http.NewServeMux()
 
-	router.HandleFunc("POST /api/students", student.Create())
+	router.HandleFunc("POST /api/students", student.Create(storage))
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port),

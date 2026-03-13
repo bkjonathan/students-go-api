@@ -5,14 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
+	"github.com/bkjonathan/students-go-api/internal/storage"
 	"github.com/bkjonathan/students-go-api/internal/types"
 	"github.com/bkjonathan/students-go-api/internal/utils/response"
 	"github.com/go-playground/validator/v10"
 )
 
-func Create() http.HandlerFunc {
+func Create(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var student types.Student
 
@@ -32,6 +34,13 @@ func Create() http.HandlerFunc {
 			return
 		}
 
+		_, err = storage.SaveStudent(student.Name, student.Email, student.Age)
+		slog.Info("user created successfully")
+
+		if err != nil {
+			response.WriteJSON(w, http.StatusInternalServerError, response.GenerateErrorResponse(fmt.Errorf("failed to save student")))
+			return
+		}
 		response.WriteJSON(w, http.StatusCreated, student)
 		// w.Write([]byte("Create student"))
 	}
