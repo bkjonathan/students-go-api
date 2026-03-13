@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/bkjonathan/students-go-api/internal/config"
+	"github.com/bkjonathan/students-go-api/internal/http/handlers/student"
 )
 
 func main() {
@@ -19,15 +20,14 @@ func main() {
 
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to Students Api"))
-	})
+	router.HandleFunc("POST /api/students", student.Create())
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port),
 		Handler: router,
 	}
 
+	slog.Info("Starting server...", "host", cfg.Server.Host, "port", cfg.Server.Port)
 	fmt.Printf("Starting server on %s:%d...\n", cfg.Server.Host, cfg.Server.Port)
 
 	done := make(chan os.Signal, 1)
